@@ -68,3 +68,131 @@ callFunc();
 ```
 
 > 결론 : 외부함수 호출이 종료되더라도 상위스코프를 외부함수 스코프로 가지고 있는 구조를 클로저(외부함수에 의해 반환되는 내부함수)라한다. 
+
+#### this
+
+자바스크립트 모든 `함수는 실행될 때마다 this라는 객체가` arguments라는 유사배열 객체와 함께 `함수 내부로 암묵적으로 전달`된다.
+`this는 함수가 호출된 상황에 따라 그 모습을 달리`한다.
+
+1. 객체의 메서드를 호출하는 상황
+
+객체의 메서드를 호출할때 this는 메서드를 소유하는 인스턴스를 참조한다. 즉, `해당 메서드를 호출한 객체로 바인딩` 된다.
+
+```javascript
+var obj = {
+    name: "foo",
+    sayName: function(){
+        console.log(this),
+    }
+};
+obj.sayName(); //Object {name: "foo", sayName: sayName()}
+```
+
+2. 함수 호출상황
+
+함수 호출시 함수 내부에 사용된 this는 전역객체에 바인딩 된다.
+
+```javascript
+var value = 100;
+var obj = {
+    value: 1,
+    func1: function() {
+        console.log(this.value); //1
+        var func2 = function(){
+            console.log(this.value);//100
+        }
+        func2();
+    }; 
+};
+
+obj.func1();
+```
+
+3. 생성자 함수를 통해 객체를 생성하는 상황
+
+`new 키워드를 통해 생성자 함수를 호출하는 경우에는 this가 객체 자신`이 된다.
+내부적으로 보면 생성자 함수 호출시 일반 빈 객체가 생성되고, this가 바인딩된다. `해당 객체는 함수를 통해 생성된 객체이며, 자신의 부모인 프로토타입 객체와 연결`되어있다.
+return이 명시되지 않은경우 this가 리턴된다.
+
+```javascript
+var Person = function(name) {
+    console.log(this);
+    this.name = name;
+}
+
+var foo = new Person('foo'); //Person
+console.log(foo.name); //foo
+```
+
+4. apply call bind를 통한 호출상황
+
+여러 상황에 의존하지 않고 this를 자바스크립트 코드로 주입 설정하는 방법이다.
+bind는 선언시 call,apply는 호출시 this를 설정한다.
+
+- bind
+```javascript
+var value = 100;
+var obj = {
+    value:1,
+    func1: function() {
+        console.log(this.value);
+        
+        var func2 = function(){
+            console.log(this.value);
+        }.bind(this);
+
+        func2();
+        //원래는 전역객체에 this가 바인딩되나, 
+        //bind를 통해 this를 obj로 바인딩 하였다.
+    }
+}
+obj.func1();
+//1
+//1
+```
+
+- call : call은 파라미터를 하나씩 넘겨준다.
+
+```javascript
+var value = 100;
+var obj = {
+    value:1,
+    func1: function() {
+        console.log(this.value);
+        
+        var func2 = function(p1,p2){
+            console.log(this.value);
+            console.log(p1);
+            console.log(p2);
+        };
+
+        func2.call(this,'param1','param2');
+        //원래는 전역객체에 this가 바인딩되나, 
+        //call을 통해 호출시 this를 obj로 바인딩 하였다.
+    }
+}
+obj.func1();
+```
+
+- apply : apply는 파라미터를 배열의 형태로 넘긴다.
+
+```javascript
+var value = 100;
+var obj = {
+    value:1,
+    func1: function() {
+        console.log(this.value);
+        
+        var func2 = function(p1,p2){
+            console.log(this.value);
+            console.log(p1);
+            console.log(p2);
+        };
+
+        func2.apply(this,['param1','param2']);
+        //원래는 전역객체에 this가 바인딩되나, 
+        //apply을 통해 호출시 this를 obj로 바인딩 하였다.
+    }
+}
+obj.func1();
+```
