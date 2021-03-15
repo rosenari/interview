@@ -458,7 +458,7 @@ Promise.all([promise1,promise2]).then(function(values){
 
 - Async/Await
 
-Promise보다도 더 휼륭한 비동기 처리방안을 고안하였는데, 그것이 바로 async,await이다.(async/await은 Promise 기반이다.)
+Promise만 쓰는것 보다 휼륭한 비동기 처리방안을 고안하였는데, 그것이 바로 async,await이다.(async/await은 어짜피 Promise를 같이 사용한다..)
 function 키워드 앞에 async를 붙여주면되고 function 내부의 promise를 반환하는 비동기 처리함수 앞에 await을 붙여준다.
 async/await은 Promise보다 비동기 코드의 겉모습을 더 깔끔하게 한다.
 
