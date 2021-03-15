@@ -289,7 +289,7 @@ console.log("script end");
 //8. promise 1출력 (그다음 then이 있다면 callback을 microtask queue에 등록)
 //9. microstack queue에 있는 콜백함수를 콜스택에 추가하여 실행
 //10. promise 2 출력
-//11.microstack 작업이 완료되면 animation frame 큐에 등록된 콜백함수를 꺼내 실행
+//11.microstack 작업이 완료되면 requestAnimationFrame호출후 콜백함수를 Animation Frame에 넣는다.
 //12. 이후 브라우저는 렌더링 작업을 하여 UI업데이트(리페인트)
 //13. stack과 microtask queue가 비어있으므로 task queue에 등록된 콜백 실행
 //14. setTimeout 출력
