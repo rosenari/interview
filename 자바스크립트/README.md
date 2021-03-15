@@ -357,3 +357,101 @@ self.addEventListener('message',function(e){
     self.postMessage('작업완료했어');
 });
 ```
+
+#### 비동기적으로 실행되는 것을 동기적으로 코딩하는 방법
+
+- Promise
+
+Javascript에서는 대부분의 작업들이 비동기로 이루어진다.
+`콜백 중첩을 통해서 비동기적인 실행을 동기적으로 바꿀수 있지만`, 프론트엔드의 규모가 커지면서 `코드 복잡도가 높아지는 상황이 발생`한다.
+이를 `해결할 방안으로 Promise 패턴`이 등장하였다.
+`Promise패턴은 비동기 작업들을 순차적으로 진행하거나 병렬로 진행하는 등의 컨트롤이 수월`해지며, 예외 처리에 대한 구조가 존재해 오류 처리에 대해서도 가시적으로 관리가 가능하다.
+Promise 패턴은 ES6 스펙에 정식 포함되었다.
+
+- Promise의 선언부
+
+Promise의 상태는 다음과 같다. 
+
+pending : 아직 약속을 수행중인 상태(fulfilled or reject되기 전)
+
+fulfilled : 약속이 지켜진 상태
+
+rejected : 약속이 못지켜진 상태
+
+settled : 약속이 지켜졌든 안지켜졌뜬 결론이 난 상태
+
+```javascript
+var _promise = function(params){
+    return new Promise(function(resolve,reject) {
+        setTimeout(function(){
+            if(params){
+                resolve("해결완료");
+            }else{
+                reject(Error("실패"));
+            }
+        },3000);
+    });
+}
+```
+
+> 위의 선언부는 Promise 객체를 리턴하도록 함수로 감싸고 있다.
+
+> new Promise로 Promise 객체가 생성되는 직후부터 resolve,reject 호출되기전까지의 순간을
+> pending 상태라 한다.
+
+> 이후 `비동기 작업을 마친뒤 약속대로 잘 줄 수 있다면 resolve함수 호출`, `실패했다면 reject함수를 호출`하는 것이 Promise의 주요개념이다.
+
+- Promise 실행부
+
+```javascript
+_promise(true)
+.then(function(text){
+    //성공시
+    console.log(text);
+},function(error){
+    //실패시
+    console.error(error);
+})
+```
+
+> _promise 호출시 Promise 객체가 리턴되며 해당 객체에는 비동기 작업이 완료 되었을때 호출하는 then이라는 API가 존재합니다.
+
+> then API는 첫번째 파라미터에 성공시 호출함수를 두번째 파라미터에 실패시 호출함수를 선언하면 Promise의 상태에 따라 수행한다.(resolve,reject함수가 바로 then 파라미터로 받은 함수들과 동일하다)
+
+- Promise 에러처리
+
+만약 체이닝형태로 연결된 상태에서 비동기 작업이 중간에 에러가 나면 catch Api를 사용한다.
+then.(null,function(){})을 메서드 형태로 바꾼거라고 보면된다.
+
+```javascript
+asyncThing1()
+    .then(function() { return asyncThing2();})
+    .then(function() { return asyncThing3();})
+    .catch(function(err){ return asyncRecovery1()})
+    .then(function() { return asyncThing4();},function(err) { return asyncRecovery2();})
+    .catch(function(err) { console.log("Don't worry about it");})
+    .then(function() { console.log("All done");});
+```
+
+- Promise.all - 여러 프로미스가 모두 완료될때 실행
+
+```javascript
+let promise1 = new Promise(function(resolve,reject){
+    setTimeout(function(){
+        console.log("promise1");
+        resolve("1");
+    },3000);
+});
+
+let promise2 = new Promise(function(resolve,reject){
+    setTimeout(function(){
+        console.log("promise2");
+        resolve("2");
+    },2000);
+});
+
+//프로미스 객체를 배열로 넘겨야한다.
+Promise.all([promise1,promise2]).then(function(values){
+    console.log(values);
+})
+```
