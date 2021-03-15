@@ -234,7 +234,76 @@ obj.func1();
 - 싱글스레드는 말귿로 한번에 하나의 작업만 수행할 수 있습니다.
 
 
-#### 자바스크립트 싱글스레드에 대한 고찰
+#### JS 언어는 싱글스레드인데, 어떻게 비동기를 지원하는가 ?
 
+자바스크립트 엔진은 기본적으로 싱글스레드로 동작한다.
+싱글스레드 : Callstack이 하나(동시에 단 하나의 작업만 처리)
+자바스크립트는 싱글스레드인데 어떻게 여러 작업을 비동기로 처리가능할까 ?
+브라우저는 자바스크립트 엔진만으로 동작하지 않는다.
+DOM조작이나, AJAX같은 비동기 이벤트를 위해 Web API를 제공한다.
+또한 Web API 호출 후 콜백 함수처리를 위한 이벤트 루프와 이벤트큐 가 존재한다.
+(Web API는 자바스크립트 엔진과 독립적이며, 이벤트 루프,큐를 통한 비동기 처리가 가능하다.)
 
+#### 비동기처리과정는 상세하게 어떻게 되나요 ?
 
+Event Loop는 call stack이 비워진 경우 queue에서 작업을 꺼내 call stack에 넣는다.
+자바스크립트는 이 Event Loop와 Queue들을 이용하여 비동기 작업을 수행한다.
+직접적인 작업은 Web Api에서 처리하고, 처리가 완료되면 요청시 등록했던 콜백함수가 queue에 등록된다.
+위처럼 이벤트 루프와 큐는 자바스크립트 엔진이 코드조각을 하나씩 처리할 수 있도록 스케줄하는 동시에 비동기 처리가 가능하도록 한다.
+
+> 이벤트 큐
+> 이벤트 큐는 여러 종류가 있으나, 대표적으로 microTask, Task 큐가 있다. stack에서 처리할 작업이 없으면 우선적으로 microTask 큐를 확인한후 callstack에 넣고, microtask가 비었다면 task 큐를 확인한다.
+
+```javascript
+console.log("script start");
+
+//setTimeout 콜백함수는 Task 큐에 등록된다.
+setTimeout(function(){
+    console.log("setTimeout");
+},0);
+
+//Promise then의 콜백함수는 microTask 큐에 등록된다.
+Promise.resolve().then(function(){
+    console.log("promise1");
+}).then(function(){
+    console.log("promise2");
+});
+
+//requestAnimation 콜백함수는 Animation Frames 큐에 등록된다.
+requestAnimationFrame(function (){
+    console.log("requestAnimationFrame");
+})
+
+console.log("script end");
+
+//위 실행순서를 보게 되면
+//1. script start 출력
+//2. Promise 작업이 스택에 등록되고 WebApi에 Promise 작업 요청
+//(callback도 전달, stack에서 Promise작업 제거)
+//3. WebApi는 Promise작업이 완료되면 then의 콜백을 microtask 큐에 등록
+//4. requestAnimation작업이 stack에 등록, WebApi에 requestAnimation작업 요청
+//(callback함수를 전달) stack에서 작업제거
+//5. WebAPI는 requestAnimation의 콜백함수를 animation frame에 등록
+//6. script end 출력
+//7. 스택이 비워지므로 microtask 큐에 등록된 Promise then의 콜백 함수를 stack에 등록
+//8. promise 1출력 (그다음 then이 있다면 callback을 microtask queue에 등록)
+//9. microstack queue에 있는 콜백함수를 콜스택에 추가하여 실행
+//10. promise 2 출력
+//11.microstack 작업이 완료되면 animation frame 큐에 등록된 콜백함수를 꺼내 실행
+//12. 이후 브라우저는 렌더링 작업을 하여 UI업데이트(리페인트)
+//13. stack과 microtask queue가 비어있으므로 task queue에 등록된 콜백 실행
+//14. setTimeout 출력
+//15. 스택과 큐가 모두 비어있다.
+```
+
+> 정리
+> - 비동기 작업으로 등록되는 작업은 task,microtask,animationFrame작업으로 구분
+> - microtask가 우선순위가 높다.
+> - microtask 처리이후 requestAnimationFrame이 호출되고 이후 브라우저 랜더링이 발생
+
+> 의문점
+> - microtask와 animation frames는 브라우저 렌더링에 영향을 미치는가 ?
+> 아니다. 브라우저 렌더링은 궁극적으로 비동기로 처리되지 않는 모든 것이 영향을 준다.
+> 일반적인 렌더링은 위에서 설명한 animation frame과 관련이 없다.
+> - 브라우저 종류에 따라 타스크 실행 순서가 다른가요 ?
+> 네 그렇습니다.
