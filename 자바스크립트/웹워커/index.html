@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="result"></div>
+    <button id="btn">run</button>
+    <script>
+        document.querySelector('#btn').addEventListener('click', function () {
+            var worker = new Worker('./worker.js');
+            worker.addEventListener('message', function (e) {
+                let div = document.createElement('div');
+                div.textContent = e.data;
+                document.querySelector('#result').appendChild(div);
+                worker.terminate();
+            });
+            worker.postMessage('일해라 워커 !');
+        });
+    </script>
+</body>
+
+</html>

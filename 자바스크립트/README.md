@@ -307,3 +307,53 @@ console.log("script end");
 > 일반적인 렌더링은 위에서 설명한 animation frame과 관련이 없다.
 > - 브라우저 종류에 따라 타스크 실행 순서가 다른가요 ?
 > 네 그렇습니다.
+
+#### 자바스크립트에서 멀티쓰레드를 사용하는 방법(웹 워커)
+
+- 멀티 쓰레드가 필요한 경우 ?
+
+자바스크립트는 싱글스레드로 동작하기때문에 연산량이 많은 작업을 할 경우, 해당 작업이 끝날때까지 아무작업을 할수가없다.
+그러면 작업을 할때동안은 UI클릭 및 DOM업데이트 역시도 동작하지 않기에 원활한 서비스 제공이 어렵습니다.
+이러한 문제를 위해 새로운 쓰레드의 워커를 생성할 수 있습니다.
+
+- 웹 워커 
+
+새로운 쓰레드의 워커를 생성해 워커에게 계산을 맡기고 메인 쓰레드는 다른 작업을 수행합니다.
+워커가 계산된 결과를 메인쓰레드에게 보내주면 메인 쓰레드는 이벤트를 수신하여 dom 업데이트를 진행하면됩니다.
+싱글코어의 컴퓨터의 경우는 워커생성의 의미가 없습니다. CPU 코어가 많을 수록 병렬로 처리할 수 있습니다.
+워커를 여러개 써서 멀티쓰레드 처럼 사용할 수 있으나, 워커는 여전히 싱글 쓰레드입니다.
+
+> 워커는 DOM에 직접 접근하지 못하기때문에 메인 쓰레드와의 메시지를 주고 받아 통신합니다.
+
+```html
+//메인 쓰레드 코드
+<div id="result"></div>
+<button id="btn">run</button>
+<script>
+    document.querySelector('#btn').addEventListener('click',function(){
+        let worker = new Worker('./worker.js');
+        worker.addEventListener('message',function(e){
+            let div = document.createElement('div');
+            div.textContent = e.data;
+            document.querySelector('#result').appendChild(div);
+            worker.terminate();
+        });
+    });
+    worker.postMessage('워커야 일해 !');
+</script>
+```
+
+```javascript
+//워커 쓰레드 코드
+function sleep(){
+    let start = new Date().getTime();
+    while( new Date().getTime() < start+delay );    
+}
+
+self.addEventListener('message',function(e){
+    console.log(e.data);
+    sleep(3000);
+    console.log('워커쓰레드 작업 완료');
+    self.postMessage('작업완료했어');
+});
+```
