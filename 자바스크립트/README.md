@@ -654,7 +654,7 @@ element.addEventListener('click',e=> {
 
 > 위상황에서 버튼 클릭시 parent 의 이벤트 핸들러는 실행되지 않는다.캡처링단계에서는 기본적으로 핸들러가 동작하지 않고 e.stopPropagation메서드 호출로 인해 다음 이벤트 단계가 실행되지 않는다.
 
-1. 상황 2
+2. 상황 2
 
 ```html
 <div id="capture">
