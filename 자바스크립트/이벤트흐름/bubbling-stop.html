@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <title>버블링 단계에서 이벤트 전파 막기</title>
+</head>
+
+<body>
+    <div id="parent" onclick="console.log('parent')">
+        <div id="middle">
+            <button id="bubbling-stop-button-1">stop</button>
+        </div>
+    </div>
+    <script>
+        $('#bubbling-stop-button-1').on('click', e => {
+            console.log("i'm bubbling-stop-button");
+        })
+
+        $('#middle').on('click', e => {
+            e.stopPropagation(); //다음 이벤트 전파를 막는다.
+            console.log('middle');
+        });
+    </script>
+</body>
+
+</html>

@@ -479,3 +479,259 @@ async function makeRequest() {
     }
 }
 ```
+
+#### Document Object Model Event
+
+- Event
+
+웹에서는 수많은 Event가 발생하고 흐른다.
+1. 브라우저(user agent)로부터 발생하는 이벤트
+2. 사용자 행동(interaction)에 의해 발생하는 이벤트
+3. DOM의 변화로 인해 발생하는 이벤트
+
+발생하는 이벤트는 그저 브라우저의 Event Interface에 맞춰 구현된 `자바스크립트 객체`일 뿐이다. 
+
+```javascript
+element.addEventListener('click',() => {
+    console.log('clicked');
+});
+//사용자가 element를 클릭했을때 콜백함수가 실행된다.
+
+element.click();
+//사용자가 클릭하지않았어도 임의로 트리거 될 수 있다.
+```
+
+> 사용자가 클릭하던, 실행되건 두가지 방법으로 발생한 Click Event는 Event interface기반으로 구현된 type이 click인 Event객체를 의미한다.
+
+> 해당 객체는 웹문서에 전파될 것이며, 전파되는 객체가 element라는 DOM Element에 도달했을떄 이벤트 핸들러가 실행된다.
+
+- Custom Event
+
+정의된 이벤트 외에도 자신만의 이벤트를 정의하고 만들수도있다.
+
+```javascript
+const boom = new CustomEvent('boom');//커스텀 이벤트 생성
+
+element.addEventListener('boom',() => { //boom이벤트 가 도달하면 호출
+    console.log('boom !!!')
+});
+
+element.dispatchEvent(boom); //boom이벤트 전파
+```
+
+- Event Flow
+
+여러 DOM Element로 구성된 하나의 웹 페이지는 window를 최상위로 하는 트리를 생성한다.
+이벤트는 각각이 갖게되는 전파경로(propagation path)를 따라 전파된다. 전파경로는 자기자신을 포함하여 그 부모 엘리먼트에 의존한다.
+
+- Propagation path
+
+전파 경로는 자기 자신을 포함하여 그 부모 엘리먼트에 의존한다.
+이를 기반으로 경로가 리스트 형식으로 구성되며 이 리스트의 마지막 값은 Event Phase(이벤트 단계)에 따라 달라진다.(단계에 따라 리스트가 각각 구성 ?)
+실제로 event가 targeting된 DOM 엘리먼트에 의해 그 리스트가 결정된다.
+
+event handler에 전달되는 event 객체를 통해 currentTarget프로퍼티(이벤트가 등록된 DOM 엘리먼트)에 접근가능하다.
+그리고 현재 이벤트가 전파될 DOM 엘리먼트를 event target 이라고 부르며 event handler에서 전달되는 event객체에서 target프로퍼티로 접근가능하다.
+
+- Event Phase(이벤트 단계)
+
+![image](https://user-images.githubusercontent.com/49670068/111157358-241a4c00-85da-11eb-8d1f-9108727c0978.png)
+
+전파경로가 결정되고 나면 이벤트 객체는 Event phase에 따라 전달된다. 브라우저에서는 총 세 단계의 Event phase를 지원하고 있다.
+
+1. Capture phase
+
+이벤트 객체가 `Window`부터 이벤트가 등록된 요소까지 전달되는 단계이다. 전파경로는 window부터 시작되며 마지막은 이벤트가 등록된 요소이다.
+
+2. Target phase
+
+이벤트 객체가 event target에 도달한 단계다.
+만약 Event type이 다음 phase를 지원하지 않는 경우 다음 단계는 넘어가고 전파가 종료된다.
+
+3. Bubble phase
+
+이벤트 객체가 capture 단계에서 전달되었던 순서의 반대로 진행되는 단계다. 부모 엘리먼트로 전달이 진행되면서 최종적으로 window까지 이벤트가 전달된다. 이 단계에서 window가 전파경로의 마지막이 되는 것이다.
+
+위 어느 Event phase에서 이벤트 핸들러를 발생시킬 것인가에 따라 그 목적이 달라질 수 있다.
+
+> Not support phase
+
+> 이벤트에 따라 지원하는 phase가 있고, 지원하지 않는 phase가 존재한다.
+> 그래서 위 단계별로 이벤트가 진행될때, 지원하지 않는 phase는 건너뛴다.
+> 그 외 전파되는 이벤트 객체는 개발자가 강제로 멈추지 않으면 전파경로 그대로 전파된다.
+
+> 예를 들어 focus 이벤트 타입은 버블링 되지 않는다.
+
+```html
+<div id="parent">
+    <label for="inner">Inner :</label>
+    <input
+    id="inner"
+    type="text"
+    onfocus="console.log('inner input focusing')"
+    onclick="console.log('inner input clicked')"
+    />
+</div>
+<script>
+    const parent = $('#parent');
+    parent.on('focus',() => console.log('parent focusing'));
+    parent.on('click',() => console.log('parent clicked'));
+//#inner 클릭시
+//캡처링단계에서는 기본적으로 동작하지않도록 option.capture값이 false이다.
+//버블링의 경우 focus 타입은 지원하지 않으므로, 부모에 등록된 focus 이벤트 핸들러가 실행되지않는다.
+</script>
+```
+
+- 이벤트 핸들러 동작 Event phase 설정
+
+```typescript
+interface AddEventListenerOption{
+    capture?: boolean,
+    once?: boolean,
+    passive?: boolean
+}
+
+const option = {capture:true}
+
+element.addEventListener(
+    'click',
+    () => {
+        console.log('click!!')
+    },
+    option
+)
+//이벤트 핸들러는 캡처링 단계에서 실행된다.
+```
+
+> option.capture는 false가 기본값이며, 이벤트 핸들러는 기본적으로 버블링 단계에서 발생하도록 등록된다.
+
+- Cancelable Event (기본동작 막기)
+
+```javascript
+aTag.addEventListener('click',e => {
+    e.preventDefault();
+})
+```
+> 이벤트 객체의 preventDefault메서드를 호출시
+> a 태그를 클릭시 href 속성에 정의한 url로 이동하지 않는다.
+> `preventDefault 메서드는` Event 객체의 cancelable property값이 true일때만 호출가능하다. 해당 메서드는 `내부적으로 Event객체의 defaultPrevented값을 true로 바꾸는 데`, 이것은 이벤트가 dispatch될때 기본동작을 할것인지에 대한 속성이다. `defaultPrevented값이 true일때 기본동작을 발생시키지않는다`.
+
+> passive 
+> option.passive는 기본값으로 false를 갖는다. true로 지정할 경우 이벤트 발생시점에서 defaultPrevented값을 무시한다.
+> 즉 true로 바뀌어도 무시하는 것(기본동작을 할까 ?)
+
+- Trusted Event
+
+사용자에 의해 발생한 이벤트인지 브라우저에 의해 발생한 것인지 Event 객체의 isTrusted 속성을 통해 판단 가능하다.
+true일경우 : 사용자 클릭에 의해 발생
+false일 경우 : 브라우저에 의해 발생(.click()메서드를 통해)
+
+- Stop propagation
+
+Event 객체에는 stopPropagation 메서드가 있으면 이벤트 전파를 멈출수있다.
+
+```javascript
+element.addEventListener('click',e=> {
+    e.stopPropagation();
+});
+```
+
+이벤트 핸들러 안에서 stopPropagation메서드 호출시 다음 진행예정인 Event phase(단계별 중단이 아닌 바로 다음 이벤트 전파가 중단)가 진행되지 않는다.(전파중단)
+
+1. 상황 1
+
+```html
+<div id="parent" onclick="console.log('hello')">
+    <button id="bubbling-stop-button">stop</button>
+</div>
+<script>
+    $('#bubbling-stop-button').on('click', e=> {
+        e.stopPropagation();
+        console.log("I'm bubbling-stop-button");
+    });
+</script>
+```
+
+> 위상황에서 버튼 클릭시 parent 의 이벤트 핸들러는 실행되지 않는다.캡처링단계에서는 기본적으로 핸들러가 동작하지 않고 e.stopPropagation메서드 호출로 인해 다음 이벤트 단계가 실행되지 않는다.
+
+1. 상황 2
+
+```html
+<div id="capture">
+    <button id="bubbling-stop-button">stop</button>
+</div>
+<script>
+    $('#capture').on(
+        'click',
+        e => {
+            console.log('hello !')
+        },
+        {capture: true}
+    )
+    $('#bubbling-stop-button').on('click',e=>{
+        e.stopPropagation();
+        console.log("I'm bubbling-stop-button")
+    });
+</script>
+```
+
+> 위 상황에서는 상위 엘리먼트에 이벤트 핸들러 capture 옵션을 true로 설정하면서 캡처링 단계에서 실행되도록 하였다.
+> bubbling-stop-button에서 stopPropagation을 호출해도 버블링 단계로 넘어가지 못해도 부모 엘리먼트는 캡처링단계에서 실행되게 설정되어있어 상관없다.
+> 출력은 hello와 I'm bubbling-stop-button이 순차적으로 출력된다.
+
+3. 상황 3
+
+capturing: true로 등록된 이벤트 핸들러에서 이벤트 전파를 막게되면 하위 엘리먼트에 등록된 동일한 타입의 이벤트 핸들러가 동작하지 않을 수 있다.
+
+```html
+<div id="capture-stop">
+    <button id="prevented-button">stop</button>
+</div>
+<script>
+    $('#capture-stop').on(
+        'click',
+        e => {
+            e.stopPropagation()
+            console.log('I prevent capturing phase')
+        },
+        { capture: true }
+    )
+
+    $('#prevented-button').on('click',e => {
+        console.log("I'm prevented-button");
+    });
+</script>
+```
+
+> 위상황에서 버튼 클릭시 부모 엘리먼트 핸들러는 동작하나 버튼에 붙은 핸들러는 동작하지 않는다.
+
+4. 상황 4
+
+stopPropagation 메서드는 다음 Phase로의 이벤트 전파를 막는다.
+Event phase중 target phase에서 이벤트 전파를 막기 위해서는 stopImmediatePropagation 메서드를 사용할 수 있다.
+
+```html
+<button id="multiclick-button">multi</button>
+<script>
+    const el = $('#multiclick-button')
+
+    el.on('click', e => {
+        console.log('first'); 
+    });
+
+    el.on('click', e => {
+        console.log('second'); 
+        e.stopImmediatePropagation();
+    });
+
+//이 뒤는 실행되지 않는다.
+    el.on('click', e => {
+        console.log('third'); 
+    });
+
+    el.on('click', e => {
+        console.log('fourth'); 
+    });
+</script>
+```
+

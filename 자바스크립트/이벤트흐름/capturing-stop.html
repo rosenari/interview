@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <title>캡처링 단계에서 이벤트 전파 막기</title>
+</head>
+
+<body>
+    <div id="parent" style="width:200px;height:100px;background:red;">
+        <div id="middle" style="width:100px;height:100px;background: blue;">
+            <button id="bubbling-stop-button-2">stop</button>
+        </div>
+    </div>
+    <script>
+        $('#parent').get(0).addEventListener('click', e => {
+            e.stopPropagation();//다음 이벤트 phase로 넘어가지 못함
+            console.log("parent");
+        }, { capture: true });
+
+        $('#middle').get(0).addEventListener('click', e => {
+            console.log('middle');
+        }, { capture: true });
+
+        $('#bubbling-stop-button-2').get(0).addEventListener('click', e => {
+            console.log("i'm bubbling-stop-button");
+        })
+    </script>
+</body>
+
+</html>
