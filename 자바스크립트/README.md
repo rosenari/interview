@@ -1074,3 +1074,82 @@ function Person(){
 var p = new Person();
 ```
 
+#### var let const의 차이점
+
+- var는 함수 스코프이고, let const는 블록스코프입니다.
+
+##### var 함수 스코프
+
+```javascript
+for(var i=0;i<10;i++){
+    console.log('i',i);
+}
+console.log('after loop i is ',i);//after loop is 10
+//var는 함수 스코프안에서 호이스팅되어 블록 밖에서도 유효하다.
+```
+
+for문에서만 유효하게 하고 싶다면 즉시호출함수로 덮어 사용해야한다.
+
+```javascript
+(function(){
+    for(var i=0;i<10;i++){
+        console.log('i',i);
+    }
+})();
+console.log('after loop i is ',i);//ReferenceError: i is not defined
+```
+
+허나 var키워드를 사용하지 않으면 함수 밖으로 호이스팅된다.
+
+```javascript
+(function(){
+    for(i=0;i<10;i++){
+        console.log('i',i);
+    }
+})();
+console.log('after loop i is',i); //after loop i is 10
+```
+
+위 현상을 방지하기 위해 'use strict' 엄격모드를 사용한다.
+
+> 엄격모드란 ? 
+> - 엄격모드는 코드에 더 나은 오류 검사를 적용하는 방법입니다.
+> - 암시적 선언 변수, 읽기 전용 속성에 값적용등이 불가합니다.
+
+```javascript
+(function(){
+    'use strict'
+    for(i=0;i<10;i++){
+        console.log('i',i);
+    }
+})();
+console.log('after loop i is',i); //ReferenceError: i is not defined
+```
+
+##### let,const (블록스코프)
+
+- ES6에서 let,const가 추가되었다.
+- 호이스팅으로 인해 발생하는 문제와 기타 문제(재선언해도 오류x)들을 해결하기위해 등장
+
+```javascript
+let a = 'test'
+let b = 'test2' //재선언 에러
+a = 'test3'//가능
+
+const b = 'test'
+const b = 'test2' //재선언 에러
+b = 'test3' //재할당 불가
+```
+
+let const도 역시 호이스팅 되지만 temporal dead zone 규칙으로 인해 할당하기전 변수 선언이 되어있지 않으면 에러가 난다.
+
+```javascript
+let dd
+dd = 'test' //정상
+
+const aa //선언과 동시에 초기화해야한다.
+```
+
+> TDZ 구간이란 스코프의 시작지점부터 초기화 시작지점까지의 구간입니다.
+> let 역시도 선언전 실행 컨텍스트 변수 객체에 등록이 돼 호이스팅 되나,
+> TDZ 구간에 의해 메모리 할당이 되질않아 참조에러가 발생합니다.
