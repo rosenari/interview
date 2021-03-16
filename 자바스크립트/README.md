@@ -1028,3 +1028,49 @@ export {
 > - import는 ES6를 아직 지원하지 않는 브라우저가 많으므로 바벨과 함께 사용한다.
 > - import는 필요한 부분만 로드하여 메모리 절약이 가능합니다.
 
+#### arrow function
+
+화살표 함수 표현식은 기존의 function 표현방식보다 간결하다.
+또한 항상 익명이며, 자신의 this,arguments,super,new.target을 바인딩 하지 않는다. 그래서 생성자로 사용할 수 없다.
+
+- 화살표 함수 도입이유 : 짧은 표현, 상위 스코프 this를 함수내 this로 사용
+
+> 짧은 표현
+
+```javascript
+let arr = [
+    'Hydrogen',
+    'Helium',
+    'Lithium',
+    'Beryllium'
+];
+
+//기존 function 표현
+arr.map(function(v){
+    return v.length;
+})
+
+arr.map((v) => {
+    return v.length;
+});
+
+arr.map(({length}) => length);
+```
+
+> 상위 스코프 this
+
+```javascript
+function Person(){
+    //생성자 함수의 this는 자기자신이다.
+    this.age = 0;
+
+    setInterval(()=> {
+        //(상위 스코프인 생성자 함수 실행컨텍스트의 AO의 this를 그대로 사용한다.)
+        //즉, this는 person 객체를 참조한다.
+        this.age++;
+    },1000);
+}
+
+var p = new Person();
+```
+
