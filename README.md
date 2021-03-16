@@ -29,7 +29,7 @@
 (Promise , async/await)
 - Dom Event란 무엇이고, Dom Event의 흐름은 어떻게 되는가 ? ✅
 - 실행 컨텍스트에 대해 설명해보세요. ✅
-- require와 import의 차이점
+- require와 import의 차이점 ✅
 - ES6에서 화살표함수는 언제 사용하고, 왜쓰나요 ?
 - var let const의 차이점은 ?
 - 타입스크립트를 사용하는 이유가 뭘까요 ?
