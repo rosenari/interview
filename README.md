@@ -37,7 +37,7 @@
 #### CSS 관련 질문
 - BOX-MODEL에 대하여 설명해보세요. ✅
 - position에 대하여 설명해보세요. ✅
-- SASS,SCSS(전처리기)를 사용해본 적이 있나요 ? CSS만 사용할때와 다른점을 말씀해보세요.
+- SASS,SCSS(전처리기)를 사용해본 적이 있나요 ? CSS만 사용할때와 다른점을 말씀해보세요. 
 - CSS 방법론에 대하여 설명해보세요.(SMACSS,OOCSS,BEM) ✅
 - 브라우저마다 제공되는 element의 스타일 통일성을 위한 방법은 ? (normalize.css,reset.css) ✅
 
